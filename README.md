@@ -1,4 +1,4 @@
-# GRP-10-2024-PROYINF
+# GRP-xx-2024-PROYINF
 ***
 ## INTEGRANTES:
 * Bryan Olivares &nbsp;&nbsp;| ROL: 202173571-2
