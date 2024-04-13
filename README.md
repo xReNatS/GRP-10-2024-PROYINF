@@ -1,4 +1,4 @@
-# GRP-xx-2024-PROYINF
+# GRP-Analytics Dream Team-2024-PROYINF
 ***
 ## INTEGRANTES:
 * Bryan Olivares &nbsp;&nbsp;| ROL: 202173571-2
