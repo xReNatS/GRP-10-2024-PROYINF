@@ -8,3 +8,7 @@
 ***
 ## WIKI:
 Hacer click [aquí](https://github.com/xReNatS/GRP-xx-2024-PROYINF/wiki) para acceder a la wiki.
+***
+## Prototipo no funcional de la interfaz
+Para acceder al prototipo haga click [aquí](https://miro.com/welcomeonboard/NzJkYm56N0lsSG1meHJOY0NXckhlSUtXQkd5Vk1VRVBZd2JIeUNneVBIUHlkbTJzc3lDTVg3bncwM3RkanVsZnwzNDU4NzY0NTg2NzcyMjM5ODY5fDI=?share_link_id=305077782138)
+
