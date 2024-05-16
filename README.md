@@ -1,7 +1,7 @@
 # GRP-Analytics Dream Team-2024-PROYINF
 ***
 ## INTEGRANTES:
-* Bryan Olivares &nbsp;&nbsp;&nbsp;| ROL: 202173571-2
+* Bryan Olivares &nbsp;&nbsp;| ROL: 202173571-2
 * Renato Ramírez | ROL: 202173639-5
 * Marcel Silva&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| ROL: 202173597-6
 * Matias Torrejon | ROL: 202173543-7
