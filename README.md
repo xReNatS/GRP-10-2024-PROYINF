@@ -12,3 +12,6 @@ Hacer click [aquí](https://github.com/xReNatS/GRP-xx-2024-PROYINF/wiki) para ac
 ## Prototipo no funcional de la interfaz:
 Para acceder al prototipo haga click [aquí.](https://drive.google.com/drive/folders/12ehyVg43Ym6FuP-r2PiIgXE5Mse-qME1?usp=sharing)
 
+## Video sobre los avances del programa (hito 4):
+Para acceder al video explicativo
+[aquí.](https://youtu.be/DfQ3zQJ2a70)
