@@ -1,4 +1,4 @@
-# GRP-Analytics Dream Team-2024-PROYINF
+# GRP-ENGINEER DREAM TEAM-2024-PROYINF
 ***
 ## INTEGRANTES:
 * Bryan Olivares &nbsp;&nbsp;| ROL: 202173571-2
@@ -18,3 +18,6 @@ Para acceder al video explicativo hacer click
 ## Video final sobre los avances del programa (hito 5):
 Para acceder al video explicativo hacer click 
 [aquí.](https://www.youtube.com/watch?v=QQ3pRX9yhDQ)
+
+## Continuación del proyecto para Ingeniería de Software 2024-2 ##
+Para este semestre vamos a seguir trabajando en base al último estado del proyecto en A&DS, y será en este donde implementaremos los nuevos requerimientos solicitados.
