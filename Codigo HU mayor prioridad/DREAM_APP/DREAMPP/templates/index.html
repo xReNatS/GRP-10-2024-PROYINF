@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de subida de archivos</title>
+    {% load static %}
+    <link rel="stylesheet" typo="text/css" href="{% static 'css/style.css' %}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <div class="container">
+        <!-- Columna izquierda: Formulario para subir archivo -->
+        <div class="wrapper">
+            <h1>Subir archivo DICOM</h1>
+            <form method="post" enctype="multipart/form-data">
+                <div class="input-box">
+                    {% csrf_token %}
+                    <input type="file" name="archivo_dicom" accept=".dcm">
+                    <button type="submit">Subir Archivo</button>
+                </div>
+            </form>
+
+            {% if imagen %}
+                <h2>Imagen DICOM</h2>
+                <div class="image-container">
+                    <img src="{{ imagen }}" alt="Imagen DICOM">
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <p style="color: red;">{{ error }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Columna derecha: Información del archivo -->
+        <div class="info">
+            <form method="GET">
+                <input type="text" name="search" placeholder="Buscar en cabecera..." value="{{ request.GET.search }}">
+                <button type="submit">Buscar</button>
+            </form>
+
+            {% if error %}
+                <p style="color: red;">{{ error }}</p>
+            {% endif %}
+
+            {% if metadata %}
+                <h2>Información del DICOM</h2>
+                <ul>
+                    {% for key, value in metadata.items %}
+                        {% if key != 'Pixel Data' %}
+                            <li><strong>{{ key }}:</strong> {{ value }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
