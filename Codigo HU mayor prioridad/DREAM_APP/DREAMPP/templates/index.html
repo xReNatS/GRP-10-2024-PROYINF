@@ -9,8 +9,15 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 </head>
 <body>
+    <div class="navbar">
+        {% if user.is_authenticated %}
+            <p>Usuario autenticado: {{ user.username }}</p>
+            <a href="{% url 'login' %}" class="logout-btn">Cerrar sesión</a>
+        {% else %}
+            <p>No has iniciado sesión. <a href="{% url 'login' %}">Inicia sesión aquí</a></p>
+        {% endif %}
+    </div>
     <div class="container">
-        <!-- Columna izquierda: Formulario para subir archivo -->
         <div class="wrapper">
             <h1>Subir archivo DICOM</h1>
             <form method="post" enctype="multipart/form-data">
@@ -33,7 +40,6 @@
             {% endif %}
         </div>
 
-        <!-- Columna derecha: Información del archivo -->
         <div class="info">
             <form method="GET">
                 <input type="text" name="search" placeholder="Buscar en cabecera..." value="{{ request.GET.search }}">

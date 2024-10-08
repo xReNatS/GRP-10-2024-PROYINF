@@ -17,13 +17,6 @@
         <form action="" method="POST">
             {% csrf_token %}
             <h1>Login</h1>
-            {% if messages %}
-                <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-                </ul>
-            {% endif %}
             <div class="input-box">
                 <input type="text" name="username" placeholder="Nombre de Usuario"
                 required="">
@@ -34,6 +27,7 @@
                 required="">
                 <i class='bx bxs-lock-alt'></i>
             </div>
+            <div>CREDENCIAL INVALIDA</div>
             <button class="btn">Login</button>
       
         </form>
