@@ -15,19 +15,26 @@ body {
     margin-top: 20px;
 }
 
+.container-info {
+    display: flex;
+    width: 120%;
+    max-width: 1700px;
+    margin-top: 2000px;
+}
+
 .wrapper {
-    width: 45%; /* La columna izquierda ocupa el 40% del contenedor */
+    width: 45%; 
     background: transparent;
     border: 2px solid rgba(255, 255, 255, .2);
     backdrop-filter: blur(20px);
     border-radius: 10px;
     padding: 5px 40px;
-    margin-right: 20px; /* Espacio entre la columna izquierda y la derecha */
-    margin-bottom: auto; /* Espacio inferior para separar del contenedor de info */
+    margin-right: 20px; 
+    margin-bottom: auto; 
 }
 
 .info {
-    width: 55%; /* La columna derecha ocupa el 60% del contenedor */
+    width: 55%;
     padding: 20px;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 10px;
@@ -76,7 +83,7 @@ body {
 .info form {
     display: flex;
     gap: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .info input[type="text"] {
@@ -133,13 +140,12 @@ body {
 }
 
 .image-container img {
-    width: 100%; /* O el tamaño que necesites */
-    max-width: 800px; /* Controlar el tamaño máximo */
+    width: 100%; 
+    max-width: 800px; 
     height: auto;
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 50px;
 }
-
 
 
 
