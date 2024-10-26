@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página de subida de archivos</title>
     {% load static %}
-    <link rel="stylesheet" typo="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
 </head>
 <body>
     <div class="navbar">
@@ -41,25 +43,17 @@
         </div>
 
         <div class="info">
-            <form method="GET">
-                <input type="text" name="search" placeholder="Buscar en cabecera..." value="{{ request.GET.search }}">
-                <button type="submit">Buscar</button>
-            </form>
+            
+            <div class="w3-container">
 
-            {% if error %}
-                <p style="color: red;">{{ error }}</p>
-            {% endif %}
+                <h2>Funciones disponibles:</h2>
+                <p>
+                    <button class="w3-button w3-block w3-blue" onclick="window.location.href='{% url 'info' %}'">Visualizar información de cabecera</button>
+                </p>
+                
+            </div>
 
-            {% if metadata %}
-                <h2>Información del DICOM</h2>
-                <ul>
-                    {% for key, value in metadata.items %}
-                        {% if key != 'Pixel Data' %}
-                            <li><strong>{{ key }}:</strong> {{ value }}</li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            {% endif %}
+       
         </div>
     </div>
 </body>
