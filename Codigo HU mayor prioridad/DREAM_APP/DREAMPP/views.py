@@ -1,6 +1,9 @@
+import base64
+import io
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.core.files.storage import FileSystemStorage
-from PIL import Image
+from PIL import Image, ImageEnhance, ImageOps
 import numpy as np
 import pydicom
 import os
@@ -9,8 +12,6 @@ from django.conf import settings
 def upload_file(request):
     jpeg_url = None
     metadata = {}
-    original_metadata = {}
-    show_image = True 
 
     # Verificar si se subió un archivo
     if request.method == 'POST' and request.FILES.get('archivo_dicom'):
@@ -40,85 +41,113 @@ def upload_file(request):
             if os.path.exists(jpeg_file_path):
                 jpeg_url = fs.url(jpeg_filename)
                 metadata = extract_metadata(dicom_file)
-                original_metadata = metadata.copy()
 
                 # Guardar la información en la sesión
                 request.session['dicom_image'] = jpeg_url
-                request.session['dicom_metadata'] = original_metadata
+                request.session['dicom_metadata'] = metadata
 
         except Exception as e:
             return render(request, 'index.html', {'error': 'No se pudo procesar el archivo DICOM.'})
 
-    else:
-        jpeg_url = request.session.get('dicom_image')
-        original_metadata = request.session.get('dicom_metadata', {})
 
-    search_query = request.GET.get('search', '')
-
-    # filtrar datos
-    metadata = original_metadata
-    if search_query:
-        metadata = {k: v for k, v in original_metadata.items() if search_query.lower() in k.lower() or search_query.lower() in str(v).lower()}
-
-
-    # Renderizar la plantilla con la imagen datos filtrados y datos originales
+    # Renderizar la plantilla con la imagen y los metadatos
     return render(request, 'index.html', {
-        'imagen': jpeg_url, # Solo mostrar la imagen si show_image es verdadero
+        'imagen': jpeg_url,
         'metadata': metadata,
-        'original_metadata': original_metadata,
-        'search_query': search_query
     })
+
 
 def extract_metadata(dicom_file):
     metadata = {}
     for elem in dicom_file:
-        if elem.VR != 'SQ': 
+        if elem.VR != 'SQ' and elem.VR != 'PixelData': 
             metadata[elem.name] = str(elem.value)
     return metadata
 
 
-def upload_info_view(request):
-    metadata = {}
-    original_metadata = {}
+def view_header(request):
+    
+    dicom_file_path = request.session.get('dicom_file_path')  
 
-    # Verificar si se subió un archivo
-    if request.method == 'POST' and request.FILES.get('archivo_dicom'):
-        archivo_dicom = request.FILES['archivo_dicom']
-        fs = FileSystemStorage()
+    if not dicom_file_path:
+        return render(request, 'error.html', {'message': 'No DICOM file found in session'})
 
-        filename = fs.save(archivo_dicom.name, archivo_dicom)
-        file_absolute_path = os.path.join(settings.MEDIA_ROOT, filename)
+    ds = pydicom.dcmread(dicom_file_path)
 
-        try:
-            dicom_file = pydicom.dcmread(file_absolute_path)
-            metadata = extract_metadata(dicom_file)
-            original_metadata = metadata.copy()
+    dicom_data = {}
 
-            # Guardar la información en la sesión
-            request.session['dicom_metadata'] = original_metadata
+    fields_of_interest = {
+        'Patient ID': (0x0010, 0x0020),
+        'Patient Name': (0x0010, 0x0010),
+        'Patient Birth Date': (0x0010, 0x0030),
+        'Patient Sex': (0x0010, 0x0040),
+        'Study Date': (0x0008, 0x0020),
+        'Study Time': (0x0008, 0x0030),
+        'Study Instance UID': (0x0020, 0x000D),
+        'Series Instance UID': (0x0020, 0x000E),
+        'Modality': (0x0008, 0x0060),
+        'Series Date': (0x0008, 0x0021),
+        'Image Position': (0x0020, 0x0032),
+        'Image Orientation': (0x0020, 0x0037),
+        'Slice Thickness': (0x0018, 0x0050),
+        'Repetition Time': (0x0018, 0x0080),
+        'Echo Time': (0x0018, 0x0081),
+        'Protocol Name': (0x0018, 0x1030),
+        'Manufacturer': (0x0008, 0x0070),
+        'Study Description': (0x0008, 0x1030),
+        'Series Description': (0x0008, 0x103E),
+        'Convolution Kernel': (0x0018, 0x1210),
+    }
 
-        except Exception as e:
-            return render(request, 'info.html', {'error': 'No se pudo procesar el archivo DICOM.'})
+    
+    for field_name, tag in fields_of_interest.items():
+        if tag in ds:
+            dicom_data[field_name] = ds.get(tag).value
+    
+    search_query = request.GET.get('search', '').lower()
 
-    # Intentar cargar datos desde la sesión
-    else:
-        original_metadata = request.session.get('dicom_metadata', {})
-
-    # Filtrar "Pixel data" del diccionario original_metadata
-    filtered_metadata = {k: v for k, v in original_metadata.items() if 'Pixel Data' not in k}
-
-    # Manejar la búsqueda de datos
-    search_query = request.GET.get('search', '')
-
-    # Filtrar datos si hay una búsqueda
-    metadata = filtered_metadata
+    # Filtra los resultados según el término de búsqueda
     if search_query:
-        metadata = {k: v for k, v in filtered_metadata.items() if search_query.lower() in k.lower() or search_query.lower() in str(v).lower()}
+        dicom_data = {key: value for key, value in dicom_data.items() if search_query in key.lower()}
 
-    return render(request, 'info.html', {
-        'metadata': metadata,
-        'original_metadata': filtered_metadata,  
-        'search_query': search_query
-    })
+    # Renderizar la plantilla con los datos
+    return render(request, 'dicom_header.html', {'dicom_data': dicom_data, 'search_query': search_query})
 
 
+def apply_filters(request):
+    jpeg_url = request.GET.get('jpeg_url')
+    contrast_value = float(request.GET.get('contrast', 1.0))
+    negative = request.GET.get('negative', 'false') == 'true'
+    colormap = request.GET.get('colormap', '')
+    
+    # Abrir la imagen JPEG original
+    if jpeg_url:
+        jpeg_path = os.path.join(settings.MEDIA_ROOT, jpeg_url.strip("/"))
+    else:
+        return JsonResponse({'error': 'URL de imagen no válida'}, status=400)
+    
+    # Aplicar los filtros
+    try:
+        with Image.open(jpeg_path) as image:
+            if contrast_value != 1.0:
+                image = ImageEnhance.Contrast(image).enhance(contrast_value)
+
+            if negative:
+                image = ImageOps.invert(image.convert("RGB"))
+
+            if colormap == 'gray':
+                image = image.convert('L')  # Escala de grises
+            elif colormap == 'sepia':
+                sepia_filter = [(255, 240, 192)]  # Sepia simplificado
+                image = ImageOps.colorize(image.convert('L'), 'black', 'brown')
+
+    # Convertir la imagen procesada a base64 para actualizar en tiempo real
+            image_io = io.BytesIO()
+            image.save(image_io, format='PNG')
+            image_io.seek(0)
+            image_data_base64 = base64.b64encode(image_io.read()).decode('utf-8')
+
+            return JsonResponse({'image_data': image_data_base64})
+    
+    except FileNotFoundError:
+        return JsonResponse({'error': 'Archivo no encontrado'}, status=404)

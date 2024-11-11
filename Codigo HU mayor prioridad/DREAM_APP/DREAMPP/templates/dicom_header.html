@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cabecera Dicom</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sección de búsqueda en el encabezado -->
+        <div class="wrapper">
+            <form method="get">
+                <input type="text" name="search" placeholder="Buscar..." value="{{ search_query }}" style="width: 60%; padding: 10px;">
+                <button type="submit" style="padding: 10px; background-color: #2196F3; border: none; border-radius: 5px; cursor: pointer;">Buscar</button>
+            </form>
+        </div>
+
+        <!-- Sección de información DICOM -->
+        <div class="Dicominfo">
+            <h2>Detalles de la Cabecera DICOM</h2>
+            <div class="DicomInfo">
+                <table style="width: 100%; border-collapse: collapse;">
+                    {% for tag_name, tag_value in dicom_data.items %}
+                    <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
+                        <td style="padding: 10px;"><strong>{{ tag_name }}:</strong></td>
+                        <td style="padding: 10px;">{{ tag_value }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
