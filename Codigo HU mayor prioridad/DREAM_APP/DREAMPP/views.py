@@ -43,8 +43,9 @@ def upload_file(request):
                 metadata = extract_metadata(dicom_file)
 
                 # Guardar la información en la sesión
-                request.session['dicom_image'] = jpeg_url
+                request.session['dicom_file_path'] = file_absolute_path
                 request.session['dicom_metadata'] = metadata
+                request.session['dicom_image'] = jpeg_url
 
         except Exception as e:
             return render(request, 'index.html', {'error': 'No se pudo procesar el archivo DICOM.'})
@@ -115,6 +116,58 @@ def view_header(request):
 
 
 def apply_filters(request):
+    # Recibir los parámetros de la URL
+    jpeg_url = request.GET.get('jpeg_url')  # URL de la imagen JPEG original
+    contrast_value = float(request.GET.get('contrast', 1.0))  # Ajuste de contraste
+    negative = request.GET.get('negative', 'false') == 'true'  # Imagen negativa
+    colormap = request.GET.get('colormap', '')  # Mapa de colores
+    
+    # Abrir la imagen original
+    image_path = os.path.join(settings.MEDIA_ROOT, jpeg_url.lstrip('/media/'))  # Obtener ruta completa
+    edited_image = Image.open(image_path)
+
+    # Ajustar el contraste
+    enhancer = ImageEnhance.Contrast(edited_image)
+    edited_image = enhancer.enhance(contrast_value)
+
+    # Aplicar imagen negativa
+    if negative:
+        edited_image = ImageOps.invert(edited_image.convert('RGB'))
+
+    # Aplicar filtro de color (colormap)
+    if colormap == "gray":
+        edited_image = edited_image.convert('L')  # Escala de grises
+    elif colormap == "sepia":
+        width, height = edited_image.size
+        pixels = edited_image.load()
+
+        for py in range(height):
+            for px in range(width):
+                r, g, b = edited_image.getpixel((px, py))
+
+                tr = int(0.393 * r + 0.769 * g + 0.189 * b)
+                tg = int(0.349 * r + 0.686 * g + 0.168 * b)
+                tb = int(0.272 * r + 0.534 * g + 0.131 * b)
+
+                if tr > 255:
+                    tr = 255
+                if tg > 255:
+                    tg = 255
+                if tb > 255:
+                    tb = 255
+
+                pixels[px, py] = (tr,tg,tb)
+
+    # Convertir la imagen editada a base64
+    buffered = io.BytesIO()
+    edited_image.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+    # Devolver la imagen en base64 para actualizar en el cliente
+    return JsonResponse({'image_data': img_str})
+
+'''
+def apply_filters(request):
     jpeg_url = request.GET.get('jpeg_url')
     contrast_value = float(request.GET.get('contrast', 1.0))
     negative = request.GET.get('negative', 'false') == 'true'
@@ -151,3 +204,4 @@ def apply_filters(request):
     
     except FileNotFoundError:
         return JsonResponse({'error': 'Archivo no encontrado'}, status=404)
+'''

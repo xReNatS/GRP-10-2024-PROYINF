@@ -62,26 +62,30 @@
 
         <div id="filters" style="display: none;">
             <h2>Ajustes de imagen</h2>
-            <div>
-                <label for="contrast">Contraste:</label>
-                <input type="range" id="contrast" name="contrast" min="0.5" max="2.0" step="0.1" value="1.0">
-            </div>
-            
-            <div>
-                <label for="negative">Imagen negativa:</label>
-                <input type="checkbox" id="negative" name="negative">
-            </div>
-
-            <div>
-                <label for="colormap">Filtro de color:</label>
-                <select id="colormap" name="colormap">
-                    <option value="">Ninguno</option>
-                    <option value="gray">Escala de grises</option>
-                    <option value="sepia">Sepia</option>
-                </select>
-            </div>
-            
-            <button id="applyFilters">Aplicar ajustes</button>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="contrast">Contraste:</label>
+                    <input type="range" id="contrast" name="contrast" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+        
+                <div>
+                    <label for="negative">Imagen negativa:</label>
+                    <input type="checkbox" id="negative" name="negative">
+                </div>
+        
+                <div>
+                    <label for="colormap">Filtro de color:</label>
+                    <select id="colormap" name="colormap">
+                        <option value="">Ninguno</option>
+                        <option value="gray">Escala de grises</option>
+                        <option value="sepia">Sepia</option>
+                    </select>
+                </div>
+        
+                
+            </form>
         </div>
     </div> 
     
@@ -89,7 +93,7 @@
         
         function infoDicom(){
             window.open("{% url 'dicom_header' %}", "DICOMHeader", "width=800,height=500,resizable=yes,scrollbars=yes");
-        }console.log("JPEG URL: ", "{{ jpeg_url }}");
+        };
     </script>
 
     <script>
@@ -102,35 +106,42 @@
             }
         }   
         
-        const image = document.getElementById("image");
-        const contrastControl = document.getElementById("contrast");
-        const negativeControl = document.getElementById("negative");
-        const colormapControl = document.getElementById("colormap");
-        const applyFiltersButton = document.getElementById("applyFilters");
-        const jpegUrl = "{{ jpeg_url }}";  // URL del archivo JPEG original
+        document.addEventListener("DOMContentLoaded", function () {
+            const image = document.getElementById("image");
+            const contrastControl = document.getElementById("contrast");
+            const negativeControl = document.getElementById("negative");
+            const colormapControl = document.getElementById("colormap");
+            const applyFiltersButton = document.getElementById("applyFilters");
+            const jpegUrl = "{{ imagen }}";  // URL del archivo JPEG original
 
-        function updateImage() {
-            const contrastValue = contrastControl.value;
-            const negative = negativeControl.checked;
-            const colormap = colormapControl.value;
+            // Función que se ejecuta cuando el usuario cambia los controles
+            function updateImage() {
+                const contrastValue = contrastControl.value;
+                const negative = negativeControl.checked;
+                const colormap = colormapControl.value;
 
-            const baseUrl = "{% url 'apply_filters' %}";
-            const url = `${baseUrl}?jpeg_url=${jpegUrl}&contrast=${contrastValue}&negative=${negative}&colormap=${colormap}`;
+                const baseUrl = "{% url 'apply_filters' %}";
+                const url = `${baseUrl}?jpeg_url=${jpegUrl}&contrast=${contrastValue}&negative=${negative}&colormap=${colormap}`;
 
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    image.src = 'data:image/png;base64,' + data.image_data;
-                });
-        }
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Aquí se actualiza la imagen
+                        image.src = 'data:image/png;base64,' + data.image_data;
+                    })
+                    .catch(error => {
+                        console.error("Error al aplicar los filtros:", error);
+                    });
+            }
 
-        contrastControl.addEventListener("input", updateImage);
-        negativeControl.addEventListener("change", updateImage);
-        colormapControl.addEventListener("change", updateImage);
-        applyFiltersButton.addEventListener("click", updateImage);
+            contrastControl.addEventListener("input", updateImage);  
+            negativeControl.addEventListener("change", updateImage);  
+            colormapControl.addEventListener("change", updateImage);
 
-        updateImage();  // Para aplicar los filtros iniciales
+           
+            updateImage();
+        });
+
     </script>
 </body>
 </html>
