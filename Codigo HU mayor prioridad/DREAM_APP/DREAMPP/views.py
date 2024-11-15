@@ -9,6 +9,7 @@ import pydicom
 import os
 from django.conf import settings
 
+
 def upload_file(request):
     jpeg_url = None
     metadata = {}
@@ -41,20 +42,28 @@ def upload_file(request):
             if os.path.exists(jpeg_file_path):
                 jpeg_url = fs.url(jpeg_filename)
                 metadata = extract_metadata(dicom_file)
+                
+                pixel_spacing_data = dicom_file.get((0x0028, 0x0030))  # Leer PixelSpacing
+                if pixel_spacing_data:
+                    pixel_spacing = [float(value) for value in pixel_spacing_data]
+
 
                 # Guardar la información en la sesión
                 request.session['dicom_file_path'] = file_absolute_path
                 request.session['dicom_metadata'] = metadata
                 request.session['dicom_image'] = jpeg_url
+                request.session['pixel_spacing'] = pixel_spacing
+
 
         except Exception as e:
             return render(request, 'index.html', {'error': 'No se pudo procesar el archivo DICOM.'})
 
 
     # Renderizar la plantilla con la imagen y los metadatos
-    return render(request, 'index.html', {
+    return render(request, 'index.html', {  
         'imagen': jpeg_url,
         'metadata': metadata,
+        'pixel_spacing': pixel_spacing,
     })
 
 
@@ -166,42 +175,18 @@ def apply_filters(request):
     # Devolver la imagen en base64 para actualizar en el cliente
     return JsonResponse({'image_data': img_str})
 
-'''
-def apply_filters(request):
-    jpeg_url = request.GET.get('jpeg_url')
-    contrast_value = float(request.GET.get('contrast', 1.0))
-    negative = request.GET.get('negative', 'false') == 'true'
-    colormap = request.GET.get('colormap', '')
+
+def process_measurement(request):
+   
+    x1 = float(request.GET.get('x1', 0))
+    y1 = float(request.GET.get('y1', 0))
+    x2 = float(request.GET.get('x2', 0))
+    y2 = float(request.GET.get('y2', 0))
+
+    distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+
+    return JsonResponse({'distance': distance})
+
+
+
     
-    # Abrir la imagen JPEG original
-    if jpeg_url:
-        jpeg_path = os.path.join(settings.MEDIA_ROOT, jpeg_url.strip("/"))
-    else:
-        return JsonResponse({'error': 'URL de imagen no válida'}, status=400)
-    
-    # Aplicar los filtros
-    try:
-        with Image.open(jpeg_path) as image:
-            if contrast_value != 1.0:
-                image = ImageEnhance.Contrast(image).enhance(contrast_value)
-
-            if negative:
-                image = ImageOps.invert(image.convert("RGB"))
-
-            if colormap == 'gray':
-                image = image.convert('L')  # Escala de grises
-            elif colormap == 'sepia':
-                sepia_filter = [(255, 240, 192)]  # Sepia simplificado
-                image = ImageOps.colorize(image.convert('L'), 'black', 'brown')
-
-    # Convertir la imagen procesada a base64 para actualizar en tiempo real
-            image_io = io.BytesIO()
-            image.save(image_io, format='PNG')
-            image_io.seek(0)
-            image_data_base64 = base64.b64encode(image_io.read()).decode('utf-8')
-
-            return JsonResponse({'image_data': image_data_base64})
-    
-    except FileNotFoundError:
-        return JsonResponse({'error': 'Archivo no encontrado'}, status=404)
-'''
