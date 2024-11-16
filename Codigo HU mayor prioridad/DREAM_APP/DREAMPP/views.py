@@ -13,6 +13,7 @@ from django.conf import settings
 def upload_file(request):
     jpeg_url = None
     metadata = {}
+    pixel_spacing = None
 
     # Verificar si se subió un archivo
     if request.method == 'POST' and request.FILES.get('archivo_dicom'):

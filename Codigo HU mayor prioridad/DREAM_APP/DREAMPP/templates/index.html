@@ -1,227 +1,428 @@
 <!DOCTYPE html>
 <html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página de subida de archivos</title>
+    {% load static %}
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'css/style.css' %}"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Página de subida de archivos</title>
-  {% load static %}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
-</head>
-
-<body>
-  <div class="navbar">
-    {% if user.is_authenticated %}
-    <p>Usuario autenticado: {{ user.username }}</p>
-    <a href="{% url 'login' %}" class="logout-btn">Cerrar sesión</a>
-    {% else %}
-    <p>
-      No has iniciado sesión.
-      <a href="{% url 'login' %}">Inicia sesión aquí</a>
-    </p>
-    {% endif %}
-  </div>
-
-  <div class="container">
-    <div class="wrapper">
-      <h1>Subir archivo DICOM</h1>
-      <form method="post" enctype="multipart/form-data">
-        <div class="input-box">
-          {% csrf_token %}
-          <input type="file" name="archivo_dicom" accept=".dcm" />
-          <button type="submit">Subir Archivo</button>
-        </div>
-      </form>
-    </div>
-
-    <div class="image-section">
-      {% if imagen %}
-      <h2>Imagen DICOM</h2>
-      <div class="image-container" style="position: relative">
-        <img id="image" src="{{ imagen }}" alt="Imagen DICOM" style="display: block" />
-        <canvas id="measurementCanvas" style="position: absolute; top: 0; left: 0; pointer-events: none"></canvas>
-      </div>
+  <body>
+    <div class="navbar">
+      {% if user.is_authenticated %}
+      <p>Usuario autenticado: {{ user.username }}</p>
+      <a href="{% url 'login' %}" class="logout-btn">Cerrar sesión</a>
+      {% else %}
+      <p>
+        No has iniciado sesión.
+        <a href="{% url 'login' %}">Inicia sesión aquí</a>
+      </p>
       {% endif %}
     </div>
-  </div>
 
-  <div class="content-section">
-    <div class="info">
-      <div class="w3-container">
-        <h2>Funciones disponibles:</h2>
-        <p>
-          <button class="w3-button w3-block w3-blue" onclick="infoDicom()">
-            Visualizar información de cabecera
-          </button>
-        </p>
-        <p>
-          <button class="w3-button w3-block w3-blue" onclick="toggleFilters()">
-            Ajustes de imagen
-          </button>
-        </p>
-        <p>
-          <button class="w3-button w3-block w3-blue" onclick="toggleMeasurementTools()">
-            Herramientas de medicion
-          </button>
-        </p>
+    <div class="container">
+      <div class="wrapper">
+        <h1>Subir archivo DICOM</h1>
+        <form method="post" enctype="multipart/form-data">
+          <div class="input-box">
+            {% csrf_token %}
+            <input type="file" name="archivo_dicom" accept=".dcm" />
+            <button type="submit">Subir Archivo</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="image-section">
+        {% if imagen %}
+        <h2>Imagen DICOM</h2>
+        <div class="image-container" style="position: relative">
+          <img
+            id="image"
+            src="{{ imagen }}"
+            alt="Imagen DICOM"
+            style="display: block"
+            height="auto"
+          />
+          <canvas
+            id="measurementCanvas"
+            style="position: absolute; top: 0; left: 0; pointer-events: none"
+          ></canvas>
+        </div>
+        {% endif %}
       </div>
     </div>
 
-    <div id="filters" style="display: none">
-      <h2>Ajustes de imagen</h2>
-      <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
+    <div class="content-section">
+      <div class="info">
+        <div class="w3-container">
+          <h2>Funciones disponibles:</h2>
+          <p>
+            <button class="w3-button w3-block w3-blue" onclick="infoDicom()">
+              Visualizar información de cabecera
+            </button>
+          </p>
+          <p>
+            <button
+              class="w3-button w3-block w3-blue"
+              onclick="toggleFilters()"
+            >
+              Ajustes de imagen
+            </button>
+          </p>
+          <p>
+            <button
+              class="w3-button w3-block w3-blue"
+              onclick="toggleMeasurementTools()"
+            >
+              Herramientas de medicion
+            </button>
+          </p>
+        </div>
+      </div>
 
-        <div>
-          <label for="contrast">Contraste:</label>
-          <input type="range" id="contrast" class="contrast" min="0.5" max="2.0" step="0.1" value="1.0" />
+      <div id="filters" style="display: none">
+        <h2>Ajustes de imagen</h2>
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div>
+            <label for="contrast">Contraste:</label>
+            <input
+              type="range"
+              id="contrast"
+              class="contrast"
+              min="0.5"
+              max="2.0"
+              step="0.1"
+              value="1.0"
+            />
+          </div>
+
+          <div>
+            <label for="negative">Imagen negativa:</label>
+            <input type="checkbox" id="negative" name="negative" />
+          </div>
+
+          <div>
+            <label for="colormap">Filtro de color:</label>
+            <select id="colormap" name="colormap">
+              <option value="">Ninguno</option>
+              <option value="gray">Escala de grises</option>
+              <option value="sepia">Sepia</option>
+            </select>
+          </div>
+        </form>
+      </div>
+
+      <div id="measurementInfo" style="display: none">
+        <h2>Herramientas de Medición</h2>
+
+        <!-- Botones para seleccionar la herramienta -->
+        <p>
+          <button
+            class="w3-button w3-block w3-blue"
+            onclick="activateLineMeasurement()"
+          >
+            Medición de Línea
+          </button>
+        </p>
+        <p>
+          <button
+            class="w3-button w3-block w3-blue"
+            onclick="activateAngleMeasurement()"
+          >
+            Medición de Ángulo
+          </button>
+        </p>
+
+        <!-- Sección de medición de línea -->
+        <div id="lineMeasurementInfo" style="display: none">
+          <h3>Medición de Línea</h3>
+          <p>Haga clic para marcar el inicio y fin de la línea.</p>
+          <div
+            class="measurement-info"
+            data-pixel-spacing-x="{{ pixel_spacing.0 }}"
+            data-pixel-spacing-y="{{ pixel_spacing.1 }}"
+          >
+            <!-- Información de la medición de línea -->
+            Longitud: <span id="lineLength">0</span> | Longitud en mm:
+            <span id="lineLengthMM">0</span>
+          </div>
         </div>
 
-        <div>
-          <label for="negative">Imagen negativa:</label>
-          <input type="checkbox" id="negative" name="negative" />
+        <!-- Sección de medición de ángulos -->
+        <div id="angleMeasurementInfo" style="display: none">
+          <h3>Medición de Ángulo</h3>
+          <p>
+            Haga clic para marcar tres puntos: el vértice y los dos extremos del
+            ángulo.
+          </p>
+          <div class="measurement-info">
+            <!-- Información de la medición de ángulo -->
+            Ángulo: <span id="angleMeasure">0</span>°
+          </div>
         </div>
-
-        <div>
-          <label for="colormap">Filtro de color:</label>
-          <select id="colormap" name="colormap">
-            <option value="">Ninguno</option>
-            <option value="gray">Escala de grises</option>
-            <option value="sepia">Sepia</option>
-          </select>
-        </div>
-      </form>
-    </div>
-
-    <div id="measurementInfo" style="display: none">
-      <h2>Herramientas de Medición</h2>
-      <p>Haga clic para marcar el inicio y fin de la línea.</p>
-      <div class="measurement-info" data-pixel-spacing-x="{{ pixel_spacing.0 }}" data-pixel-spacing-y="{{ pixel_spacing.1 }}">
-        Longitud: <span id="lineLength">0</span> |
-        Longitud en mm: <span id="lineLengthMM">0</span>
       </div>
     </div>
-  </div>
 
-  <script>
-    function infoDicom() {
-      window.open(
-        "{% url 'dicom_header' %}",
-        "DICOMHeader",
-        "width=800,height=500,resizable=yes,scrollbars=yes"
-      );
-    }
-  </script>
-
-  <script>
-    function toggleFilters() {
-      const filtersDiv = document.getElementById("filters");
-      if (filtersDiv.style.display === "none") {
-        filtersDiv.style.display = "block"; // Mostrar los filtros
-      } else {
-        filtersDiv.style.display = "none"; // Ocultar los filtros
+    <script>
+      function infoDicom() {
+        window.open(
+          "{% url 'dicom_header' %}",
+          "DICOMHeader",
+          "width=800,height=500,resizable=yes,scrollbars=yes"
+        );
       }
-    }
+    </script>
 
-    document.addEventListener("DOMContentLoaded", function () {
-      const image = document.getElementById("image");
-      const contrastControl = document.getElementById("contrast");
-      const negativeControl = document.getElementById("negative");
-      const colormapControl = document.getElementById("colormap");
-      const applyFiltersButton = document.getElementById("applyFilters");
-      const jpegUrl = "{{ imagen }}"; // URL del archivo JPEG original
+    <script>
+      function toggleFilters() {
+        const filtersDiv = document.getElementById("filters");
+        if (filtersDiv.style.display === "none") {
+          filtersDiv.style.display = "block"; // Mostrar los filtros
+        } else {
+          filtersDiv.style.display = "none"; // Ocultar los filtros
+        }
+      }
 
-      // Función que se ejecuta cuando el usuario cambia los controles
-      function updateImage() {
-        const contrastValue = contrastControl.value;
-        const negative = negativeControl.checked;
-        const colormap = colormapControl.value;
+      document.addEventListener("DOMContentLoaded", function () {
+        const image = document.getElementById("image");
+        const contrastControl = document.getElementById("contrast");
+        const negativeControl = document.getElementById("negative");
+        const colormapControl = document.getElementById("colormap");
+        const applyFiltersButton = document.getElementById("applyFilters");
+        const jpegUrl = "{{ imagen }}"; // URL del archivo JPEG original
 
-        const baseUrl = "{% url 'apply_filters' %}";
-        const url = `${baseUrl}?jpeg_url=${jpegUrl}&contrast=${contrastValue}&negative=${negative}&colormap=${colormap}`;
+        // Función que se ejecuta cuando el usuario cambia los controles
+        function updateImage() {
+          const contrastValue = contrastControl.value;
+          const negative = negativeControl.checked;
+          const colormap = colormapControl.value;
 
-        fetch(url)
-          .then((response) => response.json())
-          .then((data) => {
-            // Aquí se actualiza la imagen
-            image.src = "data:image/png;base64," + data.image_data;
-          })
-          .catch((error) => {
-            console.error("Error al aplicar los filtros:", error);
+          const baseUrl = "{% url 'apply_filters' %}";
+          const url = `${baseUrl}?jpeg_url=${jpegUrl}&contrast=${contrastValue}&negative=${negative}&colormap=${colormap}`;
+
+          fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+              // Aquí se actualiza la imagen
+              image.src = "data:image/png;base64," + data.image_data;
+            })
+            .catch((error) => {
+              console.error("Error al aplicar los filtros:", error);
+            });
+        }
+
+        contrastControl.addEventListener("input", updateImage);
+        negativeControl.addEventListener("change", updateImage);
+        colormapControl.addEventListener("change", updateImage);
+
+        updateImage();
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const canvas = document.getElementById("measurementCanvas");
+        const image = document.getElementById("image");
+        let currentTool = null; // Variable para rastrear la herramienta activa
+        const ctx = canvas.getContext("2d");
+
+        // Ajustar las dimensiones del canvas cuando se carga la imagen
+        function resizeCanvas() {
+          if (image && canvas) {
+            canvas.width = image.clientWidth;
+            canvas.height = image.clientHeight;
+          }
+        }
+
+        // Escuchar el evento de carga de la imagen
+        image.addEventListener("load", resizeCanvas);
+
+        // Limpiar todos los eventos del canvas
+        function removeCanvasListeners() {
+          const newCanvas = canvas.cloneNode(true); // Clonar el canvas
+          canvas.replaceWith(newCanvas); // Reemplazar canvas sin recrearlo en el DOM
+          newCanvas.id = "measurementCanvas"; // Asegurarse de que el ID se conserve
+          return newCanvas;
+        }
+
+        // Alternar herramientas de medición
+        function toggleMeasurementTools(tool = null) {
+          const measurementInfo = document.getElementById("measurementInfo");
+          const isVisible = measurementInfo.style.display === "block";
+
+          // Alternar visibilidad del contenedor de herramientas
+          measurementInfo.style.display = isVisible ? "none" : "block";
+
+          // Habilitar o deshabilitar interacción con el canvas
+          canvas.style.pointerEvents = isVisible ? "none" : "auto";
+
+          // Ajustar tamaño del canvas si se activa
+          if (!isVisible) {
+            resizeCanvas();
+            if (tool === "line") {
+              activateLineMeasurement();
+            } else if (tool === "angle") {
+              activateAngleMeasurement();
+            }
+          }
+        }
+
+        // Función para activar medición de líneas
+        function activateLineMeasurement() {
+          if (currentTool !== "line") {
+            currentTool = "line"; // Actualizar herramienta activa
+            const updatedCanvas = removeCanvasListeners(); // Limpiar eventos previos
+            measureLine(updatedCanvas); // Activar medición de línea
+          }
+
+          document.getElementById("lineMeasurementInfo").style.display =
+            "block";
+          document.getElementById("angleMeasurementInfo").style.display =
+            "none";
+        }
+
+        // Función para activar medición de ángulos
+        function activateAngleMeasurement() {
+          if (currentTool !== "angle") {
+            currentTool = "angle"; // Actualizar herramienta activa
+            const updatedCanvas = removeCanvasListeners(); // Limpiar eventos previos
+            measureAngle(updatedCanvas); // Activar medición de ángulo
+          }
+
+          document.getElementById("lineMeasurementInfo").style.display = "none";
+          document.getElementById("angleMeasurementInfo").style.display =
+            "block";
+        }
+
+        // Lógica de medición de línea
+        function measureLine(canvas) {
+          let startX, startY, endX, endY;
+          let drawing = false;
+
+          canvas.addEventListener("mousedown", (event) => {
+            startX = event.offsetX;
+            startY = event.offsetY;
+            drawing = true;
           });
-      }
 
-      contrastControl.addEventListener("input", updateImage);
-      negativeControl.addEventListener("change", updateImage);
-      colormapControl.addEventListener("change", updateImage);
+          canvas.addEventListener("mouseup", (event) => {
+            if (drawing) {
+              endX = event.offsetX;
+              endY = event.offsetY;
+              drawing = false;
+              drawLine(startX, startY, endX, endY, canvas);
 
-      updateImage();
-    });
-  </script>
+              const pixelLength = Math.sqrt(
+                Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)
+              );
+              const pixelSpacingX = parseFloat(
+                document.querySelector(".measurement-info").dataset
+                  .pixelSpacingX || 1
+              );
+              const pixelSpacingY = parseFloat(
+                document.querySelector(".measurement-info").dataset
+                  .pixelSpacingY || 1
+              );
+              const averagePixelSpacing = (pixelSpacingX + pixelSpacingY) / 2;
+              const mmLength = pixelLength * averagePixelSpacing;
 
-<script>
-  function toggleMeasurementTools() {
-    const measurementInfo = document.getElementById("measurementInfo");
-    const canvas = document.getElementById("measurementCanvas");
-    const image = document.getElementById("image");
+              document.getElementById(
+                "lineLength"
+              ).innerText = `${pixelLength.toFixed(2)} px`;
+              document.getElementById(
+                "lineLengthMM"
+              ).innerText = `${mmLength.toFixed(2)} mm`;
+            }
+          });
+        }
 
-    measurementInfo.style.display =
-      measurementInfo.style.display === "none" || measurementInfo.style.display === ""
-        ? "block"
-        : "none";
+        // Lógica de medición de ángulo
+        function measureAngle(canvas) {
+          let points = [];
+          const ctx = canvas.getContext("2d");
 
-    if (image && canvas) {
-      canvas.width = image.clientWidth;
-      canvas.height = image.clientHeight;
-    }
+          canvas.addEventListener("mousedown", (event) => {
+            if (points.length < 3) {
+              points.push({ x: event.offsetX, y: event.offsetY });
+              drawPoints(points, ctx);
 
-    canvas.style.display = measurementInfo.style.display;
-    canvas.style.pointerEvents =
-      measurementInfo.style.display === "block" ? "auto" : "none";
-  }
+              if (points.length === 3) {
+                const angle = calculateAngle(points[0], points[1], points[2]);
+                drawAngleLabel(points[1], angle, ctx);
+                displayAngle(angle);
+                points = []; // Reiniciar puntos después de calcular el ángulo
+              }
+            }
+          });
+        }
 
-  // Lógica de dibujo
-  let startX, startY, endX, endY;
-  let drawing = false;
-  const canvas = document.getElementById("measurementCanvas");
-  const ctx = canvas.getContext("2d");
+        function drawPoints(points, context) {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          points.forEach((point) => {
+            context.fillStyle = "#FF5733";
+            context.beginPath();
+            context.arc(point.x, point.y, 5, 0, Math.PI * 2, true);
+            context.fill();
+          });
+        }
 
-  canvas.addEventListener("mousedown", (event) => {
-    startX = event.offsetX;
-    startY = event.offsetY;
-    drawing = true;
-  });
+        function calculateAngle(p1, p2, p3) {
+          const angle1 = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+          const angle2 = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+          let angle = Math.abs(angle1 - angle2) * (180 / Math.PI);
+          if (angle > 180) angle = 360 - angle;
+          return angle;
+        }
 
-  canvas.addEventListener("mouseup", (event) => {
-    if (drawing) {
-      endX = event.offsetX;
-      endY = event.offsetY;
-      drawing = false;
-      drawLine(startX, startY, endX, endY);
+        function drawAngleLabel(point, angle, context) {
+          context.fillStyle = "#1a8ae5";
+          context.font = "16px Arial";
+          context.fillText(
+            `Angle: ${angle.toFixed(2)}°`,
+            point.x + 10,
+            point.y - 10
+          );
+        }
 
-      const pixelLength = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-      const pixelSpacingX = parseFloat(document.querySelector('.measurement-info').dataset.pixelSpacingX || 1);
-      const pixelSpacingY = parseFloat(document.querySelector('.measurement-info').dataset.pixelSpacingY || 1);
-      const averagePixelSpacing = (pixelSpacingX + pixelSpacingY) / 2;
-      const mmLength = pixelLength * averagePixelSpacing;
+        function displayAngle(angle) {
+          document.getElementById("angleMeasure").innerText = `${angle.toFixed(
+            2
+          )}°`;
+        }
 
-      document.getElementById("lineLength").innerText = `${pixelLength.toFixed(2)} px`;
-      document.getElementById("lineLengthMM").innerText = `${mmLength.toFixed(2)} mm`;
-    }
-  });
+        function drawLine(x1, y1, x2, y2, canvas) {
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.strokeStyle = "#04AA6D";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
 
-  function drawLine(x1, y1, x2, y2) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpiar el canvas
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.strokeStyle = "#04AA6D"; // Color de la línea
-    ctx.lineWidth = 2; // Grosor de la línea
-    ctx.stroke();
-  }
-</script>
-</body>
-
+        // Vincular botones a funciones
+        document
+          .querySelector(".w3-button[onclick='toggleMeasurementTools()']")
+          .addEventListener("click", toggleMeasurementTools);
+        document
+          .querySelector(".w3-button[onclick='activateLineMeasurement()']")
+          .addEventListener("click", activateLineMeasurement);
+        document
+          .querySelector(".w3-button[onclick='activateAngleMeasurement()']")
+          .addEventListener("click", activateAngleMeasurement);
+      });
+    </script>
+  </body>
 </html>
